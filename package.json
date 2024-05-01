@@ -1,9 +1,9 @@
 {
-  "name": "4d265781-d4c0-425f-acb2-ef3eb354d9c7",
+  "name": "triniti_wavesurfer.js",
   "version": "7.7.11",
   "license": "BSD-3-Clause",
   "author": "johnrobmiller",
-  "description": "4d265781-d4c0-425f-acb2-ef3eb354d9c7",
+  "description": "a fork of wavesurfer.js used only in app.triniti.plus",
   "keywords": [],
   "repository": {
     "type": "git",
