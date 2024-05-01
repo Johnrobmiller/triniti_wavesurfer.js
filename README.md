@@ -1,1 +1,1 @@
-This is a forked version of wavesurfer.js used by app.Triniti.plus
+This is a forked version of wavesurfer.js used by app.triniti.plus
