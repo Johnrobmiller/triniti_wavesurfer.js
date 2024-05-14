@@ -16,6 +16,9 @@ export type RecordPluginOptions = {
   scrollingWaveform?: boolean
   /** The duration of the scrolling waveform window, defaults to 5 seconds */
   scrollingWaveformWindow?: number
+
+  /** Added in fork, scrolls the waveform in a way needed for the triniti DAW */
+  scrollWithDAW?: boolean
 }
 
 export type RecordPluginDeviceOptions = {
@@ -60,6 +63,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       ...options,
       audioBitsPerSecond: options.audioBitsPerSecond ?? DEFAULT_BITS_PER_SECOND,
       scrollingWaveform: options.scrollingWaveform ?? false,
+      scrollWithDAW: options.scrollWithDAW ?? false,
       scrollingWaveformWindow: options.scrollingWaveformWindow ?? DEFAULT_SCROLLING_WAVEFORM_WINDOW,
       renderRecordedAudio: options.renderRecordedAudio ?? true,
     })
@@ -87,6 +91,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     source.connect(analyser)
 
     const bufferLength = analyser.frequencyBinCount
+    let frameCount = 0
     const dataArray = new Float32Array(bufferLength)
 
     let animationId: number
@@ -102,15 +107,30 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       analyser.getFloatTimeDomainData(dataArray)
 
       if (this.options.scrollingWaveform) {
+        // usually the same as windowSize
         const newLength = Math.min(windowSize, this.dataWindow ? this.dataWindow.length + bufferLength : bufferLength)
+
         const tempArray = new Float32Array(windowSize) // Always make it the size of the window, filling with zeros by default
 
         if (this.dataWindow) {
-          const startIdx = Math.max(0, windowSize - this.dataWindow.length)
-          tempArray.set(this.dataWindow.slice(-newLength + bufferLength), startIdx)
+          const startIdx = Math.max(0, windowSize - this.dataWindow.length) // usually zero
+
+          if (this.options.scrollWithDAW) {
+            tempArray.set(this.dataWindow.slice(0, frameCount * bufferLength), startIdx)
+          } else {
+            // this is the line the shifts the waveform to the left.
+            // it slices out the first buffer on the dataWindow, then shifts the data to the left, discarding the first buffer that was sliced out
+            tempArray.set(this.dataWindow.slice(bufferLength - newLength), startIdx)
+          }
         }
 
-        tempArray.set(dataArray, windowSize - bufferLength)
+        if (this.options.scrollWithDAW) {
+          tempArray.set(dataArray, frameCount * bufferLength)
+          frameCount++
+        }
+        // This is the line that puts the new data on the rightmost side of the window.
+        else tempArray.set(dataArray, windowSize - bufferLength)
+
         this.dataWindow = tempArray
       } else {
         this.dataWindow = dataArray

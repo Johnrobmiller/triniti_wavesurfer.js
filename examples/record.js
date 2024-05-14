@@ -5,6 +5,7 @@ import RecordPlugin from 'wavesurfer.js/dist/plugins/record.esm.js'
 
 let wavesurfer, record
 let scrollingWaveform = false
+let scrollWithDAW = false
 
 const createWaveSurfer = () => {
   // Create an instance of WaveSurfer
@@ -18,7 +19,7 @@ const createWaveSurfer = () => {
   })
 
   // Initialize the Record plugin
-  record = wavesurfer.registerPlugin(RecordPlugin.create({ scrollingWaveform, renderRecordedAudio: false }))
+  record = wavesurfer.registerPlugin(RecordPlugin.create({ scrollingWaveform, renderRecordedAudio: false, scrollWithDAW }))
   // Render recorded audio
   record.on('record-end', (blob) => {
     const container = document.querySelector('#recordings')
@@ -114,9 +115,13 @@ recButton.onclick = () => {
     pauseButton.style.display = 'inline'
   })
 }
-document.querySelector('input[type="checkbox"]').onclick = (e) => {
+document.querySelector('#scrolling-waveform-checkbox').onclick = (e) => {
   scrollingWaveform = e.target.checked
   createWaveSurfer()
+}
+
+document.querySelector("#scroll-with-daw-checkbox").onclick = (e) => {
+  scrollWithDAW = e.target.checked
 }
 
 createWaveSurfer()
@@ -135,7 +140,8 @@ createWaveSurfer()
   <select id="mic-select">
     <option value="" hidden>Select mic</option>
   </select>
-  <label style="display:inline-block;"><input type="checkbox"  /> Scrolling waveform</label>
+  <label style="display:inline-block;"><input type="checkbox" id="scrolling-waveform-checkbox" /> Scrolling waveform</label>
+  <label style="display:inline-block;"><input type="checkbox" id="scroll-with-daw-checkbox" /> Scroll With DAW</label>
   <p id="progress">00:00</p>
 
   <div id="mic" style="border: 1px solid #ddd; border-radius: 4px; margin-top: 1rem"></div>

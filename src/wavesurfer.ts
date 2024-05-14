@@ -410,7 +410,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       const fetchParams = this.options.fetchParams || {}
       if (window.AbortController && !fetchParams.signal) {
         this.abortController = new AbortController()
-        fetchParams.signal = this.abortController?.signal;
+        fetchParams.signal = this.abortController?.signal
       }
       const onProgress = (percentage: number) => this.emit('loading', percentage)
       blob = await Fetcher.fetchBlob(url, onProgress, fetchParams)
