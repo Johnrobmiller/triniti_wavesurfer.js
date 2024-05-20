@@ -19,6 +19,9 @@ export type RecordPluginOptions = {
 
   /** Added in fork, scrolls the waveform in a way needed for the triniti DAW */
   scrollWithDAW?: boolean
+
+  /** Added in fork, displays all of the waveform that has been recorded thus far in whatever window it is given */
+  displayFullWaveformThusFar?: boolean
 }
 
 export type RecordPluginDeviceOptions = {
@@ -64,6 +67,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
       audioBitsPerSecond: options.audioBitsPerSecond ?? DEFAULT_BITS_PER_SECOND,
       scrollingWaveform: options.scrollingWaveform ?? false,
       scrollWithDAW: options.scrollWithDAW ?? false,
+      displayFullWaveformThusFar: options.displayFullWaveformThusFar ?? false,
       scrollingWaveformWindow: options.scrollingWaveformWindow ?? DEFAULT_SCROLLING_WAVEFORM_WINDOW,
       renderRecordedAudio: options.renderRecordedAudio ?? true,
     })
@@ -96,7 +100,7 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
 
     let animationId: number
 
-    const windowSize = Math.floor((this.options.scrollingWaveformWindow || 0) * audioContext.sampleRate)
+    const windowSize = Math.floor(5 * audioContext.sampleRate)
 
     const drawWaveform = () => {
       if (this.isWaveformPaused) {
@@ -132,6 +136,13 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
         else tempArray.set(dataArray, windowSize - bufferLength)
 
         this.dataWindow = tempArray
+      } else if (this.options.displayFullWaveformThusFar) {
+        const tempArray = new Float32Array((this.dataWindow?.length || 0) + dataArray.length)
+        if (this.dataWindow) tempArray.set(this.dataWindow)
+        tempArray.set(dataArray, this.dataWindow?.length || 0)
+        this.dataWindow = tempArray
+        this.dataWindow = tempArray
+        // this.dataWindow = dataArray
       } else {
         this.dataWindow = dataArray
       }
