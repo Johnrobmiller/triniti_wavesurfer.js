@@ -183,7 +183,18 @@ class RecordPlugin extends BasePlugin<RecordPluginEvents, RecordPluginOptions> {
     let stream: MediaStream
     try {
       stream = await navigator.mediaDevices.getUserMedia({
-        audio: options?.deviceId ? { deviceId: options.deviceId } : true,
+        audio: options?.deviceId
+          ? {
+              deviceId: options.deviceId,
+              autoGainControl: false,
+              echoCancellation: false,
+              noiseSuppression: false,
+            }
+          : {
+              autoGainControl: false,
+              echoCancellation: false,
+              noiseSuppression: false,
+            },
       })
     } catch (err) {
       throw new Error('Error accessing the microphone: ' + (err as Error).message)
